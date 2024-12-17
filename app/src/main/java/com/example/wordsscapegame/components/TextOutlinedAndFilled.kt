@@ -2,6 +2,7 @@ package com.example.wordsscapegame.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -15,10 +16,11 @@ import androidx.compose.ui.text.TextStyle
 @Composable
 fun TextOutlinedAndFilled(
     text: String,
-    color: Color,
-    outlineColor: Color,
+    color: Color = Color.White,
+    outlineColor: Color = MaterialTheme.colorScheme.outline,
+    strokeWidth: Float = 4f,
     style: TextStyle,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
@@ -31,7 +33,7 @@ fun TextOutlinedAndFilled(
                 color = outlineColor,
                 drawStyle = Stroke(
                     miter = 1f,
-                    width = 4f,
+                    width = strokeWidth,
                     join = StrokeJoin.Round
                 )
             ),

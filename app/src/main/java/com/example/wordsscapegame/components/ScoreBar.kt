@@ -1,68 +1,58 @@
-package com.example.wordsscapegame
+package com.example.wordsscapegame.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.wordsscapegame.components.ShadowedBox
-import com.example.wordsscapegame.components.TextOutlinedAndFilled
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.wordsscapegame.MainViewModel
+import com.example.wordsscapegame.R
 import com.example.wordsscapegame.ui.theme.Typography
 import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
 
 @Composable
-fun GameScreen(
-    onStartResetClicked: () -> Unit = {}
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 26.dp)
-            .background(MaterialTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        GameScoreBar()
-    }
-}
-
-@Composable
-private fun GameScoreBar() {
+fun GameScoreBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val boxModifier = Modifier
+            .size(width = 59.dp, height = 40.dp)
         ShadowedBox(
-            backgroundColor = WordsScapeGameTheme.extraColors.incorrectScoreContainerBackground,
-            shadowColor = WordsScapeGameTheme.extraColors.incorrectScoreContainerShadowBackground,
+            backgroundColor = WordsScapeGameTheme.extraColors.redContainerBackground,
+            shadowColor = WordsScapeGameTheme.extraColors.redContainerShadowBackground,
             roundedCornerShape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
-            content = { ScoreBoxContent(ScoreType.Wrong) }
+            content = { ScoreBoxContent(scoreType = ScoreType.Wrong) },
+            modifier = boxModifier
         )
         ShadowedBox(
-            backgroundColor = WordsScapeGameTheme.extraColors.rightScoreContainerBackground,
+            backgroundColor = WordsScapeGameTheme.extraColors.greenContainerBackground,
             shadowColor = WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground,
             roundedCornerShape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
-            content = { ScoreBoxContent(ScoreType.Right) }
+            content = { ScoreBoxContent(scoreType = ScoreType.Right) },
+            modifier = boxModifier
         )
     }
 }
 
 @Composable
-private fun ScoreBoxContent(scoreType: ScoreType) {
+private fun ScoreBoxContent(
+    viewModel: MainViewModel = hiltViewModel(),
+    scoreType: ScoreType
+) {
 
     val icon: @Composable () -> Unit = {
         Icon(
@@ -73,11 +63,9 @@ private fun ScoreBoxContent(scoreType: ScoreType) {
                 .size(scoreType.iconSize)
         )
     }
-    val text: @Composable () -> Unit = {
+    val text: @Composable (text: String) -> Unit = { text ->
         TextOutlinedAndFilled(
-            text = "0",
-            color = Color.White,
-            outlineColor = MaterialTheme.colorScheme.outline,
+            text = text,
             style = Typography.labelSmall,
             modifier = Modifier
                 .padding(start = 4.dp)
@@ -92,19 +80,15 @@ private fun ScoreBoxContent(scoreType: ScoreType) {
             .then(scoreType.padding),
     ) {
         if (scoreType == ScoreType.Wrong) {
+            val wrongCount by viewModel.lostScoreCount.collectAsState()
             icon()
-            text()
+            text("$wrongCount")
         } else {
-            text()
+            val rightCount by viewModel.caughtScoreCount.collectAsState()
+            text("$rightCount")
             icon()
         }
     }
-}
-
-@Preview
-@Composable
-private fun GameScreenPreview() {
-    GameScreen()
 }
 
 private enum class ScoreType(

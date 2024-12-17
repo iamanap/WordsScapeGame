@@ -36,17 +36,17 @@ val Typography = Typography(
     */
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 36.sp,
+        lineHeight = 30.sp,
+        letterSpacing = 0.5.sp
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 16.sp,
+        lineHeight = 8.sp,
+        letterSpacing = 0.8.sp
     ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
