@@ -8,24 +8,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.wordsscapegame.MainViewModel
 import com.example.wordsscapegame.R
 import com.example.wordsscapegame.ui.theme.Typography
 import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
 
 @Composable
-fun GameScoreBar() {
+fun GameScoreBar(
+    modifier: Modifier = Modifier,
+    caughtScore: Int = 0,
+    lostScore: Int = 0
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -35,14 +35,22 @@ fun GameScoreBar() {
             backgroundColor = WordsScapeGameTheme.extraColors.redContainerBackground,
             shadowColor = WordsScapeGameTheme.extraColors.redContainerShadowBackground,
             roundedCornerShape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
-            content = { ScoreBoxContent(scoreType = ScoreType.Wrong) },
+            content = { ScoreBoxContent(
+                caughtScore = caughtScore,
+                lostScore = lostScore,
+                scoreType = ScoreType.Wrong
+            ) },
             modifier = boxModifier
         )
         ShadowedBox(
             backgroundColor = WordsScapeGameTheme.extraColors.greenContainerBackground,
             shadowColor = WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground,
             roundedCornerShape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
-            content = { ScoreBoxContent(scoreType = ScoreType.Right) },
+            content = { ScoreBoxContent(
+                caughtScore = caughtScore,
+                lostScore = lostScore,
+                scoreType = ScoreType.Right
+            ) },
             modifier = boxModifier
         )
     }
@@ -50,8 +58,9 @@ fun GameScoreBar() {
 
 @Composable
 private fun ScoreBoxContent(
-    viewModel: MainViewModel = hiltViewModel(),
-    scoreType: ScoreType
+    scoreType: ScoreType,
+    caughtScore: Int = 0,
+    lostScore: Int = 0
 ) {
 
     val icon: @Composable () -> Unit = {
@@ -80,12 +89,10 @@ private fun ScoreBoxContent(
             .then(scoreType.padding),
     ) {
         if (scoreType == ScoreType.Wrong) {
-            val wrongCount by viewModel.lostScoreCount.collectAsState()
             icon()
-            text("$wrongCount")
+            text("$lostScore")
         } else {
-            val rightCount by viewModel.caughtScoreCount.collectAsState()
-            text("$rightCount")
+            text("$caughtScore")
             icon()
         }
     }
