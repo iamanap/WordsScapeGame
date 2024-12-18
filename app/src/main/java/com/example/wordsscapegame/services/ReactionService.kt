@@ -49,16 +49,16 @@ class ReactionServiceImpl(@ApplicationContext private val context: Context) : Re
         }
     }
 
-    override fun playSound(resourceId: Int) {
-        val soundId = soundMap[resourceId]
+    override fun playSound(soundResId: Int) {
+        val soundId = soundMap[soundResId]
         if (soundId != null) {
             soundPool.play(soundId, 1f, 1f, 0, 0, 1f)
         }
     }
 
-    override fun loadSound(resourceId: Int) {
-        val soundId = soundPool.load(context, resourceId, 1)
-        soundMap[resourceId] = soundId
+    override fun loadSound(soundResId: Int) {
+        val soundId = soundPool.load(context, soundResId, 1)
+        soundMap[soundResId] = soundId
     }
 
     override fun releaseSoundPool() {

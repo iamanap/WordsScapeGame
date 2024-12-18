@@ -1,5 +1,6 @@
 package com.example.wordsscapegame
 
+import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         super.onCreate(savedInstanceState)
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
                                 start = padding.calculateStartPadding(LayoutDirection.Ltr),
                                 end = padding.calculateEndPadding(LayoutDirection.Rtl),
                                 bottom = padding.calculateBottomPadding() - 10.dp,
-                                top = padding.calculateTopPadding() - 10.dp
+                                top = padding.calculateTopPadding() - 18.dp
                             )
                     )
                 }

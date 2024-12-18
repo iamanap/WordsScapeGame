@@ -13,12 +13,12 @@ import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun TextOutlinedAndFilled(
+    modifier: Modifier = Modifier,
     text: String,
     color: Color = Color.White,
     outlineColor: Color = MaterialTheme.colorScheme.outline,
     strokeWidth: Float = 4f,
-    style: TextStyle,
-    modifier: Modifier = Modifier
+    style: TextStyle
 ) {
     Box(
         modifier = modifier

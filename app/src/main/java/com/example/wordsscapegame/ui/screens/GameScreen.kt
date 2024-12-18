@@ -1,9 +1,12 @@
 package com.example.wordsscapegame.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -139,16 +141,26 @@ private fun WordTrail(
                 .clip(shape = RoundedCornerShape(8.dp))
                 .background(WordsScapeGameTheme.extraColors.trailBackground)
         )
-        WordBox(
-            modifier = Modifier
-                .onGloballyPositioned { layoutCoordinates ->
-                    wordBoxWidth = layoutCoordinates.size.width / density
-                },
-            targetOffset = (parentWidth - wordBoxWidth).dp,
-            word = word,
-            onWordCaught = onWordCaught,
-            onWordLost = onWordLost
-        )
+        AnimatedVisibility(
+            visible = !word.caught,
+            enter = fadeIn(
+                animationSpec = tween(durationMillis = 50)
+            ),
+            exit = fadeOut(
+                animationSpec = tween(durationMillis = 0)
+            )
+        ) {
+            WordBox(
+                modifier = Modifier
+                    .onGloballyPositioned { layoutCoordinates ->
+                        wordBoxWidth = layoutCoordinates.size.width / density
+                    },
+                targetOffset = (parentWidth - wordBoxWidth).dp,
+                word = word,
+                onWordCaught = onWordCaught,
+                onWordLost = onWordLost
+            )
+        }
     }
 }
 
@@ -172,7 +184,6 @@ private fun WordBox(
         modifier = modifier
             .wrapContentSize()
             .offset(x = wordOffsetAnimation)
-            .alpha(if (word.caught && targetOffset == 0.dp) 0f else 1f)
     ) {
         TextOutlinedAndFilled(
             text = word.name,

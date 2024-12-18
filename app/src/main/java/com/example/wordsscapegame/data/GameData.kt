@@ -75,7 +75,7 @@ class GameRepository @Inject constructor() {
                 color = Color(255, 218, 185),
                 caught = false,
                 animation = Animation(
-                    duration = 2300,
+                    duration = 1500,
                     delay = 2500
                 )
             )
