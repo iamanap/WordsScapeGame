@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -81,9 +82,25 @@ fun GameScreen(
                 modifier = Modifier
                     .weight(1f)
             )
+            val (backgroundColor, shadowColor) = when (gameUiState.status) {
+                GameStatus.ReadyToPlay -> {
+                    Pair(
+                        MaterialTheme.colorScheme.primary,
+                        WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground
+                    )
+                }
+                else -> {
+                    Pair(
+                        WordsScapeGameTheme.extraColors.resetButtonBackground,
+                        WordsScapeGameTheme.extraColors.resetButtonBackgroundShadow
+                    )
+                }
+            }
             ActionButton(
-                gameStatus = gameUiState.status,
-                onGameStatusChanged = { viewModel.changeGameStatus() },
+                onClicked = { viewModel.changeGameStatus() },
+                backgroundColor = backgroundColor,
+                shadowColor = shadowColor,
+                text = stringResource(gameUiState.status.text),
                 modifier = Modifier
                     .align(alignment = Alignment.CenterHorizontally)
             )
@@ -186,7 +203,7 @@ private fun WordBox(
             .offset(x = wordOffsetAnimation)
     ) {
         TextOutlinedAndFilled(
-            text = word.name,
+            text = word.text,
             style = MaterialTheme.typography.labelMedium,
             strokeWidth = 4f,
             modifier = Modifier

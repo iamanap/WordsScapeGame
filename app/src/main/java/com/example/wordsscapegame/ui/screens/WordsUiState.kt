@@ -30,7 +30,7 @@ data class WordsUiState(
 }
 
 data class Word(
-    val name: String,
+    val text: String,
     val position: Position,
     val color: Color,
     val caught: Boolean,

@@ -10,7 +10,7 @@ class GameRepository @Inject constructor() {
     fun getMovingWords(): List<Word> {
         return listOf(
             Word(
-                name = "Apple",
+                text = "Apple",
                 position = Position.Start,
                 color = Color.Red,
                 caught = false,
@@ -20,7 +20,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Banana",
+                text = "Banana",
                 position = Position.Start,
                 color = Color.Yellow,
                 caught = false,
@@ -30,7 +30,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Grape",
+                text = "Grape",
                 position = Position.Start,
                 color = Color.Magenta,
                 caught = false,
@@ -40,7 +40,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Orange",
+                text = "Orange",
                 position = Position.Start,
                 color = Color(255, 165, 0),
                 caught = false,
@@ -50,7 +50,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Kiwi",
+                text = "Kiwi",
                 position = Position.Start,
                 color = Color.Green,
                 caught = false,
@@ -60,7 +60,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Lemon",
+                text = "Lemon",
                 position = Position.Start,
                 color = Color.Yellow,
                 caught = false,
@@ -70,7 +70,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                name = "Peach",
+                text = "Peach",
                 position = Position.Start,
                 color = Color(255, 218, 185),
                 caught = false,

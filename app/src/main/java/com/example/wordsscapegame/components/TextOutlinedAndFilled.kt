@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun TextOutlinedAndFilled(
@@ -35,13 +36,15 @@ fun TextOutlinedAndFilled(
                     join = StrokeJoin.Round
                 )
             ),
+            textAlign = TextAlign.Center
         )
         Text(
             modifier = modifier,
             text = text,
             style = style.copy(
                 color = color
-            )
+            ),
+            textAlign = TextAlign.Center
         )
     }
 }

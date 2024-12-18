@@ -14,19 +14,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getString
 import com.example.wordsscapegame.ui.screens.GameStatus
 import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
 
 @Composable
 fun ActionButton(
     modifier: Modifier = Modifier,
-    gameStatus: GameStatus,
-    onGameStatusChanged: () -> Unit
+    backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    shadowColor: Color = WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground,
+    text: String,
+    textStyle: TextStyle = MaterialTheme.typography.labelLarge,
+    onClicked: () -> Unit
 ) {
     var pressed by remember { mutableStateOf(false) }
 
@@ -36,21 +40,6 @@ fun ActionButton(
         label = "actionButtonScaleAnimation"
     )
 
-    val (backgroundColor, shadowColor) = when (gameStatus) {
-        GameStatus.ReadyToPlay -> {
-            Pair(
-                MaterialTheme.colorScheme.primary,
-                WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground
-            )
-        }
-        else -> {
-            Pair(
-                WordsScapeGameTheme.extraColors.resetButtonBackground,
-                WordsScapeGameTheme.extraColors.resetButtonBackgroundShadow
-            )
-        }
-    }
-
     ShadowedBox(
         backgroundColor = backgroundColor,
         shadowColor = shadowColor,
@@ -58,20 +47,20 @@ fun ActionButton(
         roundedCornerShape = RoundedCornerShape(14.dp),
         elevation = 6.dp,
         modifier = modifier
-            .size(width = 160.dp, height = 82.dp)
+            .size(width = 200.dp, height = 88.dp)
             .scale(scale)
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
                     pressed = true
                     tryAwaitRelease()
                     pressed = false
-                    onGameStatusChanged()
+                    onClicked()
                 })
             }
     ) {
         TextOutlinedAndFilled(
-            text = getString(LocalContext.current, gameStatus.text),
-            style = MaterialTheme.typography.labelLarge,
+            text = text,
+            style = textStyle,
             strokeWidth = 8f,
             modifier = Modifier
                 .wrapContentSize()
@@ -83,7 +72,7 @@ fun ActionButton(
 @Composable
 private fun ActionButtonPreview() {
     ActionButton(
-        gameStatus = GameStatus.ReadyToPlay,
-        onGameStatusChanged = {}
+        text = stringResource(GameStatus.ReadyToPlay.text),
+        onClicked = {}
     )
 }
