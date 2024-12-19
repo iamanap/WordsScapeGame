@@ -36,7 +36,8 @@ fun TextOutlinedAndFilled(
                     join = StrokeJoin.Round
                 )
             ),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
         Text(
             modifier = modifier,
@@ -44,7 +45,8 @@ fun TextOutlinedAndFilled(
             style = style.copy(
                 color = color
             ),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
     }
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wordsscapegame.R
 import com.example.wordsscapegame.data.GameRepository
 import com.example.wordsscapegame.services.ReactionService
+import com.example.wordsscapegame.services.SpeechRecognitionOptions
 import com.example.wordsscapegame.services.SpeechRecognitionService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,15 +26,18 @@ class GameViewModel @Inject constructor(
 
     private val _permissionIsGranted = MutableStateFlow(true)
     val isVoicePermissionGranted: StateFlow<Boolean> = _permissionIsGranted
+    val mutex = Mutex()
 
-    private val _wordsUiState = MutableStateFlow(WordsUiState(movingWords = gameRepository.getMovingWords()))
+    private val _wordsUiState =
+        MutableStateFlow(WordsUiState(movingWords = gameRepository.getMovingWords()))
     val wordsUiState = _wordsUiState.asStateFlow()
 
     private val _gameUiState = MutableStateFlow(
         GameUiState(
-        status = GameStatus.ReadyToPlay,
-        caughtScore = 0,
-        lostScore = 0)
+            status = GameStatus.ReadyToPlay,
+            caughtScore = 0,
+            lostScore = 0
+        )
     )
     val gameUiState = _gameUiState.asStateFlow()
 
@@ -40,7 +45,8 @@ class GameViewModel @Inject constructor(
         reactionService.loadSound(R.raw.catch_sound)
         viewModelScope.launch {
             speechRecognitionService.speechState.collect {
-                processRecognizedWord()
+                if (it.spokenWords.isNotEmpty())
+                    processRecognizedWord()
             }
         }
         viewModelScope.launch {
@@ -85,7 +91,12 @@ class GameViewModel @Inject constructor(
     fun onWordLost(index: Int, word: Word) {
         if (word.position == Position.Moving && !word.caught) {
             reactionService.playText(word.text)
-            _wordsUiState.update { _wordsUiState.value.updateWordPosition(index, Position.End) }
+            _wordsUiState.update {
+                _wordsUiState.value.updateWordPosition(
+                    index,
+                    Position.End
+                )
+            }
             _gameUiState.update { _gameUiState.value.incrementLostScore() }
             reactionService.vibrate(100L)
         }
@@ -94,6 +105,7 @@ class GameViewModel @Inject constructor(
     fun onWordCaught(index: Int) {
         if (gameUiState.value.status == GameStatus.Playing
             && _wordsUiState.value.movingWords[index].position == Position.Moving
+            && !_wordsUiState.value.movingWords[index].caught
         ) {
             _wordsUiState.update { _wordsUiState.value.addCaughtWord(index) }
             _gameUiState.update { _gameUiState.value.incrementCaughtScore() }
@@ -111,24 +123,26 @@ class GameViewModel @Inject constructor(
         _permissionIsGranted.value = true
     }
 
-    fun startSpeechRecognition() {
-        speechRecognitionService.startListening()
+    private fun startSpeechRecognition() {
+        val wordTexts: List<String> = _wordsUiState.value.movingWords.map { it.text }
+        speechRecognitionService.startListening(SpeechRecognitionOptions(wordTexts))
     }
 
-    fun stopSpeechRecognition() {
+    private fun stopSpeechRecognition() {
         speechRecognitionService.stopListening()
     }
 
-    fun processRecognizedWord() {
-        val recognizedText = speechRecognitionService.speechState.value.spokenText
+    private fun processRecognizedWord() {
+        val recognizedText = speechRecognitionService.speechState.value.spokenWords
         Log.i(GameViewModel::class.simpleName, "Recognized text: $recognizedText")
-        recognizedText.split(" ").forEach { recognizedWord ->
-            _wordsUiState.value.movingWords.indexOfFirst { it.text == recognizedWord }.let { wordIndex ->
-                if (wordIndex != -1) {
-                    Log.i(GameViewModel::class.simpleName, "Caught Word: $recognizedText")
-                    onWordCaught(wordIndex)
+        recognizedText.forEach { recognizedWord ->
+            _wordsUiState.value.movingWords.indexOfFirst { it.text.lowercase() == recognizedWord.lowercase() }
+                .let { wordIndex ->
+                    if (wordIndex != -1) {
+                        Log.i(GameViewModel::class.simpleName, "Found Word: $recognizedText")
+                        onWordCaught(wordIndex)
+                    }
                 }
-            }
         }
 
     }

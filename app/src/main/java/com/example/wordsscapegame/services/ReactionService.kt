@@ -54,7 +54,7 @@ class ReactionServiceImpl(@ApplicationContext private val context: Context) : Re
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             tts.language = Locale("en-US")
-            tts.setSpeechRate(1.6f)
+            tts.setSpeechRate(1.2f)
             tts.speak(" ", TextToSpeech.QUEUE_FLUSH, null, "warmup")
         }
     }
@@ -68,9 +68,11 @@ class ReactionServiceImpl(@ApplicationContext private val context: Context) : Re
     }
 
     override fun playEffect(soundResId: Int) {
-        val soundId = soundMap[soundResId]
-        if (soundId != null) {
-            soundPool.play(soundId, 1f, 1f, 0, 0, 1f)
+        workerScope.launch {
+            val soundId = soundMap[soundResId]
+            if (soundId != null) {
+                soundPool.play(soundId, 1f, 1f, 0, 0, 1f)
+            }
         }
     }
 

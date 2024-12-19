@@ -50,7 +50,7 @@ class GameRepository @Inject constructor() {
                 )
             ),
             Word(
-                text = "Kiwi",
+                text = "Watermelon",
                 position = Position.Start,
                 color = Color.Green,
                 caught = false,

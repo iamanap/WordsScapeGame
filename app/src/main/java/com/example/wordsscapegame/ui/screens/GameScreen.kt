@@ -1,9 +1,9 @@
 package com.example.wordsscapegame.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -13,8 +13,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,10 +28,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
@@ -42,13 +46,13 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.wordsscapegame.components.ActionButton
 import com.example.wordsscapegame.components.GameScoreBar
 import com.example.wordsscapegame.components.TextOutlinedAndFilled
 import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun GameScreen(
@@ -58,10 +62,11 @@ fun GameScreen(
     val wordsUiState by viewModel.wordsUiState.collectAsState()
     val gameUiState by viewModel.gameUiState.collectAsState()
 
-    Box(modifier = modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
-        .padding(vertical = 20.dp)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = 20.dp)
     ) {
         Column(
             modifier = Modifier
@@ -89,6 +94,7 @@ fun GameScreen(
                         WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground
                     )
                 }
+
                 else -> {
                     Pair(
                         WordsScapeGameTheme.extraColors.resetButtonBackground,
@@ -117,7 +123,7 @@ private fun WordTrails(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 13.dp, bottom = 7.dp, start = 20.dp, end = 20.dp),
+            .padding(top = 13.dp, start = 20.dp, end = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         movingWords.forEachIndexed { i, word ->
@@ -139,14 +145,12 @@ private fun WordTrail(
     var parentWidth by remember { mutableFloatStateOf(0f) }
     var wordBoxWidth by remember { mutableFloatStateOf(0f) }
 
-    val density = LocalDensity.current.density
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(height = 34.dp)
             .onGloballyPositioned { layoutCoordinates ->
-                parentWidth = layoutCoordinates.size.width / density
+                parentWidth = layoutCoordinates.size.width.toFloat()
             }
     ) {
         Box(
@@ -170,9 +174,9 @@ private fun WordTrail(
             WordBox(
                 modifier = Modifier
                     .onGloballyPositioned { layoutCoordinates ->
-                        wordBoxWidth = layoutCoordinates.size.width / density
+                        wordBoxWidth = layoutCoordinates.size.width.toFloat()
                     },
-                targetOffset = (parentWidth - wordBoxWidth).dp,
+                targetOffset = (parentWidth - wordBoxWidth),
                 word = word,
                 onWordCaught = onWordCaught,
                 onWordLost = onWordLost
@@ -185,22 +189,73 @@ private fun WordTrail(
 private fun WordBox(
     word: Word,
     modifier: Modifier,
-    targetOffset: Dp = 0.dp,
+    targetOffset: Float = 0f,
     onWordCaught: () -> Unit,
     onWordLost: () -> Unit
 ) {
-    val wordOffsetAnimation = offsetAnimation(word, targetOffset, onWordLost)
-    val backgroundAnimation = backgroundAnimation(word)
+    val startColor = MaterialTheme.colorScheme.primary
 
+    var clickable by rememberSaveable { mutableStateOf(false) }
+    val backgroundAnimation = remember { androidx.compose.animation.Animatable(startColor) }
+    val offsetAnimation = remember { Animatable(0f) }
+
+    val wordBoxAnimation = onPosition(word = word, targetOffset = targetOffset)
+
+    LaunchedEffect(word.position) {
+        clickable = false
+
+        launch {
+            backgroundAnimation.animateTo(
+                targetValue = wordBoxAnimation.backgroundColor,
+                animationSpec = tween(
+                    durationMillis = if (word.position == Position.Start) 0 else 200,
+                    delayMillis = wordBoxAnimation.delay
+                )
+            )
+        }
+
+        launch {
+            clickable = true
+
+            offsetAnimation.animateTo(
+                targetValue = wordBoxAnimation.targetOffset,
+                animationSpec = tween(
+                    durationMillis = wordBoxAnimation.duration,
+                    delayMillis = wordBoxAnimation.delay,
+                    easing = LinearEasing
+                )
+            )
+
+            clickable = false
+            onWordLost()
+        }
+    }
+
+    WordBoxComponent(modifier, word, wordBoxAnimation, offsetAnimation) {
+        if (clickable) onWordCaught()
+    }
+}
+
+@Composable
+private fun WordBoxComponent(
+    modifier: Modifier,
+    word: Word,
+    wordBoxAnimation: WordBoxAnimation,
+    offsetAnimation: Animatable<Float, AnimationVector1D>,
+    onWordCaught: () -> Unit
+) {
     OutlinedButton(
         onClick = { onWordCaught() },
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = backgroundAnimation),
+        colors = ButtonDefaults.buttonColors(containerColor = wordBoxAnimation.backgroundColor),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
         contentPadding = PaddingValues(horizontal = 6.dp),
         modifier = modifier
             .wrapContentSize()
-            .offset(x = wordOffsetAnimation)
+            .offset(
+                x = with(LocalDensity.current) { offsetAnimation.value.toDp() },
+                y = 0.dp
+            )
     ) {
         TextOutlinedAndFilled(
             text = word.text,
@@ -213,49 +268,39 @@ private fun WordBox(
 }
 
 @Composable
-private fun backgroundAnimation(word: Word): Color {
-    val backColor = when (word.position) {
-        Position.Start -> WordsScapeGameTheme.extraColors.wordStart
-        Position.Moving -> word.color
-        else -> WordsScapeGameTheme.extraColors.wordLost
+fun onPosition(word: Word, targetOffset: Float): WordBoxAnimation {
+    return when (word.position) {
+        Position.Start -> {
+            WordBoxAnimation(
+                backgroundColor = WordsScapeGameTheme.extraColors.resetButtonBackground,
+                targetOffset = 0f,
+                duration = 0,
+                delay = 0
+            )
+        }
+
+        Position.Moving -> {
+            WordBoxAnimation(
+                backgroundColor = word.color,
+                targetOffset = targetOffset,
+                duration = word.animation.duration,
+                delay = word.animation.delay
+            )
+        }
+
+        else ->
+            WordBoxAnimation(
+                backgroundColor = if (!word.caught) WordsScapeGameTheme.extraColors.wordLost
+                    else word.color
+                ,
+                targetOffset = targetOffset,
+                duration = 0,
+                delay = 0
+            )
     }
-    val backgroundAnimation by animateColorAsState(
-        targetValue = backColor,
-        animationSpec = tween(
-            durationMillis = if (word.position == Position.Start) 0 else 200
-        ),
-        label = "backgroundColorAnimation"
-    )
-    return backgroundAnimation
 }
 
-@Composable
-private fun offsetAnimation(
-    word: Word,
-    targetOffset: Dp,
-    onWordLost: () -> Unit
-): Dp {
-    val (targetValue, duration, delay) = when (word.position) {
-        Position.Start -> Triple(0.dp, 0, 0)
-        Position.Moving -> Triple(targetOffset, word.animation.duration, word.animation.delay)
-        else -> Triple(targetOffset, 0, 0)
-    }
-
-    val wordOffsetAnimation by animateDpAsState(
-        targetValue = targetValue,
-        animationSpec = tween(
-            durationMillis = duration,
-            delayMillis = delay,
-            easing = LinearEasing
-        ),
-        finishedListener = {
-            onWordLost()
-        },
-        label = "wordOffsetAnimation"
-    )
-    return wordOffsetAnimation
-}
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CaughtWordsBox(
     modifier: Modifier = Modifier,
@@ -273,27 +318,20 @@ private fun CaughtWordsBox(
             .clip(shape = cornerShape)
             .background(WordsScapeGameTheme.extraColors.trailBackground)
     ) {
-        Column(
+        FlowRow(
+            maxItemsInEachRow = 3,
             modifier = Modifier
-                .padding(10.dp)
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            caughtWords.chunked(3)
-                .forEach { rowWords ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        rowWords.forEach { word ->
-                            WordBox(
-                                modifier = Modifier,
-                                word = word,
-                                onWordCaught = {},
-                                onWordLost = {}
-                            )
-                        }
-                    }
-                }
+            caughtWords.forEach { word ->
+                WordBox(
+                    modifier = Modifier,
+                    word = word,
+                    onWordCaught = {},
+                    onWordLost = {}
+                )
+            }
         }
     }
 }
@@ -303,3 +341,10 @@ private fun CaughtWordsBox(
 private fun GameScreenPreview() {
     GameScreen()
 }
+
+data class WordBoxAnimation(
+    val backgroundColor: Color,
+    val targetOffset: Float,
+    val duration: Int,
+    val delay: Int
+)

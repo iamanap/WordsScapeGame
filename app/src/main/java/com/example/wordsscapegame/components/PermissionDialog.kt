@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -106,9 +105,10 @@ interface PermissionTextProvider {
     fun getDescription(isPermanentlyDeclined: Boolean): String
 }
 
-class RecordAudioPermissionTextProvider(@ApplicationContext private val context: Context): PermissionTextProvider {
+class RecordAudioPermissionTextProvider(@ApplicationContext private val context: Context) :
+    PermissionTextProvider {
     override fun getDescription(isPermanentlyDeclined: Boolean): String {
-        return if(isPermanentlyDeclined) {
+        return if (isPermanentlyDeclined) {
             context.getString(R.string.permanently_declined_record_audio_permission_message)
         } else {
             context.getString(R.string.declined_record_audio_permission_message)

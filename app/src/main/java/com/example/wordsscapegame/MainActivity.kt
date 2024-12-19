@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
                     contract = ActivityResultContracts.RequestPermission(),
                     onResult = { isGranted ->
                         viewModel.onPermissionGranted(isGranted)
-                        if (isGranted) viewModel.startSpeechRecognition()
                     }
                 )
                 LaunchedEffect(permissionIsGranted) {
