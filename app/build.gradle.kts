@@ -42,6 +42,9 @@ android {
     kapt {
         correctErrorTypes = true
     }
+    packaging {
+        resources.excludes.add("META-INF/gradle/incremental.annotation.processors")
+    }
 }
 
 dependencies {
