@@ -1,6 +1,7 @@
-package com.example.wordsscapegame.ui.screens
+package com.example.wordsscapegame.presentation.screens
 
-import androidx.compose.ui.graphics.Color
+import com.example.wordsscapegame.domain.data.Position
+import com.example.wordsscapegame.domain.data.Word
 
 data class WordsUiState(
     val movingWords: List<Word>,
@@ -27,23 +28,4 @@ data class WordsUiState(
     fun resetWords(newWords: List<Word>): WordsUiState {
         return WordsUiState(movingWords = newWords, caughtWords = emptySet())
     }
-}
-
-data class Word(
-    val text: String,
-    val position: Position,
-    val color: Color,
-    val caught: Boolean,
-    val animation: Animation
-)
-
-data class Animation(
-    val duration: Int,
-    val delay: Int
-)
-
-enum class Position {
-    Start,
-    Moving,
-    End
 }

@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.ui.screens
+package com.example.wordsscapegame.presentation.screens
 
 import androidx.annotation.StringRes
 import com.example.wordsscapegame.R

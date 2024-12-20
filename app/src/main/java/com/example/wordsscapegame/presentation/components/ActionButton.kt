@@ -21,13 +21,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wordsscapegame.ui.screens.GameStatus
-import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
+import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
 
 @Composable
 fun ActionButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
-    shadowColor: Color = WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground,
+    shadowColor: Color = WordsScapeGameTheme.extraColors.greenContainerShadowBackground,
     text: String,
     textStyle: TextStyle = MaterialTheme.typography.labelLarge,
     onClicked: () -> Unit

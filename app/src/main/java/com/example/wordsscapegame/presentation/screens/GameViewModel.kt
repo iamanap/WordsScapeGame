@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wordsscapegame.R
-import com.example.wordsscapegame.data.GameRepository
+import com.example.wordsscapegame.domain.data.GameData
+import com.example.wordsscapegame.domain.data.Position
+import com.example.wordsscapegame.domain.data.Word
 import com.example.wordsscapegame.services.ReactionService
 import com.example.wordsscapegame.services.SpeechRecognitionOptions
 import com.example.wordsscapegame.services.SpeechRecognitionService
@@ -14,22 +16,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameRepository: GameRepository,
+    private val gameData: GameData,
     private val reactionService: ReactionService,
     private val speechRecognitionService: SpeechRecognitionService
 ) : ViewModel() {
 
     private val _permissionIsGranted = MutableStateFlow(true)
     val isVoicePermissionGranted: StateFlow<Boolean> = _permissionIsGranted
-    val mutex = Mutex()
 
     private val _wordsUiState =
-        MutableStateFlow(WordsUiState(movingWords = gameRepository.getMovingWords()))
+        MutableStateFlow(WordsUiState(movingWords = gameData.getMovingWords()))
     val wordsUiState = _wordsUiState.asStateFlow()
 
     private val _gameUiState = MutableStateFlow(
@@ -79,13 +79,14 @@ class GameViewModel @Inject constructor(
     private fun startGame() {
         _gameUiState.update { _gameUiState.value.changeGameToPlaying() }
         val initialWords =
-            gameRepository.getMovingWords().map { it.copy(position = Position.Moving) }
+            gameData.getMovingWords().map { it.copy(position = Position.Moving) }
         _wordsUiState.update { wordsUiState.value.resetWords(initialWords) }
     }
 
     private fun stopGame() {
         _gameUiState.update { _gameUiState.value.changeGameToReadyToPlay() }
-        _wordsUiState.update { WordsUiState(movingWords = gameRepository.getMovingWords()) }
+        _wordsUiState.update { WordsUiState(movingWords = gameData.getMovingWords()) }
+        stopSpeechRecognition()
     }
 
     fun onWordLost(index: Int, word: Word) {

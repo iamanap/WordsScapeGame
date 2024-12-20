@@ -4,15 +4,20 @@ import androidx.compose.ui.graphics.Color
 import com.example.wordsscapegame.ui.screens.Animation
 import com.example.wordsscapegame.ui.screens.Position
 import com.example.wordsscapegame.ui.screens.Word
+import com.example.wordsscapegame.ui.theme.Green
+import com.example.wordsscapegame.ui.theme.Orange
+import com.example.wordsscapegame.ui.theme.Peach
+import com.example.wordsscapegame.ui.theme.Purple
+import com.example.wordsscapegame.ui.theme.Red
 import javax.inject.Inject
 
-class GameRepository @Inject constructor() {
+class GameData @Inject constructor() {
     fun getMovingWords(): List<Word> {
         return listOf(
             Word(
                 text = "Apple",
                 position = Position.Start,
-                color = Color.Red,
+                color = Red,
                 caught = false,
                 animation = Animation(
                     duration = 4000,
@@ -32,7 +37,7 @@ class GameRepository @Inject constructor() {
             Word(
                 text = "Grape",
                 position = Position.Start,
-                color = Color.Magenta,
+                color = Purple,
                 caught = false,
                 animation = Animation(
                     duration = 3000,
@@ -42,7 +47,7 @@ class GameRepository @Inject constructor() {
             Word(
                 text = "Orange",
                 position = Position.Start,
-                color = Color(255, 165, 0),
+                color = Orange,
                 caught = false,
                 animation = Animation(
                     duration = 2500,
@@ -52,7 +57,7 @@ class GameRepository @Inject constructor() {
             Word(
                 text = "Watermelon",
                 position = Position.Start,
-                color = Color.Green,
+                color = Green,
                 caught = false,
                 animation = Animation(
                     duration = 2000,
@@ -72,7 +77,7 @@ class GameRepository @Inject constructor() {
             Word(
                 text = "Peach",
                 position = Position.Start,
-                color = Color(255, 218, 185),
+                color = Peach,
                 caught = false,
                 animation = Animation(
                     duration = 1500,

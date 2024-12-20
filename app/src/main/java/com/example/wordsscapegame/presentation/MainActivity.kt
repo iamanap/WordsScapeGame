@@ -34,7 +34,7 @@ import com.example.wordsscapegame.components.PermissionDialog
 import com.example.wordsscapegame.components.RecordAudioPermissionTextProvider
 import com.example.wordsscapegame.ui.screens.GameScreen
 import com.example.wordsscapegame.ui.screens.GameViewModel
-import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
+import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

@@ -25,7 +25,7 @@ fun TextOutlinedAndFilled(
         modifier = modifier
             .wrapContentSize()
     ) {
-        Text(
+        CustomText(
             modifier = modifier,
             text = text,
             style = style.copy(
@@ -35,18 +35,29 @@ fun TextOutlinedAndFilled(
                     width = strokeWidth,
                     join = StrokeJoin.Round
                 )
-            ),
-            textAlign = TextAlign.Center,
-            maxLines = 1
+            )
         )
-        Text(
+        CustomText(
             modifier = modifier,
             text = text,
             style = style.copy(
                 color = color
-            ),
-            textAlign = TextAlign.Center,
-            maxLines = 1
+            )
         )
     }
+}
+
+@Composable
+fun CustomText(
+    modifier: Modifier = Modifier,
+    text: String,
+    style: TextStyle
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        style = style,
+        textAlign = TextAlign.Center,
+        maxLines = 1
+    )
 }

@@ -15,8 +15,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.wordsscapegame.R
-import com.example.wordsscapegame.ui.theme.Typography
-import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
+import com.example.wordsscapegame.presentation.theme.DarkGreen
+import com.example.wordsscapegame.presentation.theme.DarkRed
+import com.example.wordsscapegame.presentation.theme.LightGreen
+import com.example.wordsscapegame.presentation.theme.Red
+import com.example.wordsscapegame.presentation.theme.Typography
 
 @Composable
 fun GameScoreBar(
@@ -29,31 +32,43 @@ fun GameScoreBar(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val boxModifier = Modifier
-            .size(width = 59.dp, height = 40.dp)
-        ShadowedBox(
-            backgroundColor = WordsScapeGameTheme.extraColors.redContainerBackground,
-            shadowColor = WordsScapeGameTheme.extraColors.redContainerShadowBackground,
-            roundedCornerShape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
-            content = { ScoreBoxContent(
-                caughtScore = caughtScore,
-                lostScore = lostScore,
-                scoreType = ScoreType.Wrong
-            ) },
-            modifier = boxModifier
+        ScoreBox(
+            boxModifier = Modifier
+                .size(width = 59.dp, height = 40.dp),
+            caughtScore = caughtScore,
+            lostScore = lostScore,
+            scoreType = ScoreType.Lost
         )
-        ShadowedBox(
-            backgroundColor = WordsScapeGameTheme.extraColors.greenContainerBackground,
-            shadowColor = WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground,
-            roundedCornerShape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
-            content = { ScoreBoxContent(
-                caughtScore = caughtScore,
-                lostScore = lostScore,
-                scoreType = ScoreType.Right
-            ) },
-            modifier = boxModifier
+        ScoreBox(
+            boxModifier = Modifier
+                .size(width = 59.dp, height = 40.dp),
+            caughtScore = caughtScore,
+            lostScore = lostScore,
+            scoreType = ScoreType.Caught
         )
     }
+}
+
+@Composable
+private fun ScoreBox(
+    boxModifier: Modifier,
+    caughtScore: Int,
+    lostScore: Int,
+    scoreType: ScoreType
+) {
+    ShadowedBox(
+        backgroundColor = scoreType.backgroundColor,
+        shadowColor = scoreType.shadowColor,
+        roundedCornerShape = scoreType.roundedCornerShape,
+        content = {
+            ScoreBoxContent(
+                caughtScore = caughtScore,
+                lostScore = lostScore,
+                scoreType = scoreType
+            )
+        },
+        modifier = boxModifier
+    )
 }
 
 @Composable
@@ -88,7 +103,7 @@ private fun ScoreBoxContent(
             .fillMaxWidth()
             .then(scoreType.padding),
     ) {
-        if (scoreType == ScoreType.Wrong) {
+        if (scoreType == ScoreType.Lost) {
             icon()
             text("$lostScore")
         } else {
@@ -102,18 +117,27 @@ private enum class ScoreType(
     val text: String,
     val icon: Int,
     val iconSize: Dp,
-    val padding: Modifier
+    val padding: Modifier,
+    val backgroundColor: Color,
+    val shadowColor: Color,
+    val roundedCornerShape: RoundedCornerShape
 ) {
-    Wrong(
+    Lost(
         text = "Wrong Number",
         icon = R.drawable.ic_close_filled_outline,
         iconSize = 14.dp,
-        padding = Modifier.padding(end = 4.dp)
+        padding = Modifier.padding(end = 4.dp),
+        backgroundColor = Red,
+        shadowColor = DarkRed,
+        roundedCornerShape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)
     ),
-    Right(
+    Caught(
         text = "Right Number",
         icon = R.drawable.ic_check_filled_outlined,
         iconSize = 22.dp,
-        padding = Modifier.padding(start = 0.dp)
+        padding = Modifier.padding(start = 0.dp),
+        backgroundColor = LightGreen,
+        shadowColor = DarkGreen,
+        roundedCornerShape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
     )
 }

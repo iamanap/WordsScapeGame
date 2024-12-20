@@ -2,7 +2,6 @@ package com.example.wordsscapegame.services
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 interface SpeechRecognitionService {
@@ -85,6 +83,7 @@ class SpeechRecognitionServiceImpl @Inject constructor(
     override fun stopListening() {
         _speechState.update {
             it.copy(
+                spokenWords = emptyList(),
                 isSpeaking = false
             )
         }

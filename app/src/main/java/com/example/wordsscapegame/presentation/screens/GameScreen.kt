@@ -1,9 +1,9 @@
 package com.example.wordsscapegame.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -51,8 +51,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.wordsscapegame.components.ActionButton
 import com.example.wordsscapegame.components.GameScoreBar
 import com.example.wordsscapegame.components.TextOutlinedAndFilled
-import com.example.wordsscapegame.ui.theme.WordsScapeGameTheme
-import kotlinx.coroutines.launch
+import com.example.wordsscapegame.domain.data.Position
+import com.example.wordsscapegame.domain.data.Word
+import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun GameScreen(
@@ -91,7 +93,7 @@ fun GameScreen(
                 GameStatus.ReadyToPlay -> {
                     Pair(
                         MaterialTheme.colorScheme.primary,
-                        WordsScapeGameTheme.extraColors.rightScoreContainerShadowBackground
+                        WordsScapeGameTheme.extraColors.greenContainerShadowBackground
                     )
                 }
 
@@ -193,45 +195,38 @@ private fun WordBox(
     onWordCaught: () -> Unit,
     onWordLost: () -> Unit
 ) {
-    val startColor = MaterialTheme.colorScheme.primary
-
     var clickable by rememberSaveable { mutableStateOf(false) }
-    val backgroundAnimation = remember { androidx.compose.animation.Animatable(startColor) }
-    val offsetAnimation = remember { Animatable(0f) }
-
     val wordBoxAnimation = onPosition(word = word, targetOffset = targetOffset)
 
     LaunchedEffect(word.position) {
-        clickable = false
-
-        launch {
-            backgroundAnimation.animateTo(
-                targetValue = wordBoxAnimation.backgroundColor,
-                animationSpec = tween(
-                    durationMillis = if (word.position == Position.Start) 0 else 200,
-                    delayMillis = wordBoxAnimation.delay
-                )
-            )
-        }
-
-        launch {
+        if (word.position == Position.Moving) {
+            delay(wordBoxAnimation.delay.toLong())
             clickable = true
-
-            offsetAnimation.animateTo(
-                targetValue = wordBoxAnimation.targetOffset,
-                animationSpec = tween(
-                    durationMillis = wordBoxAnimation.duration,
-                    delayMillis = wordBoxAnimation.delay,
-                    easing = LinearEasing
-                )
-            )
-
-            clickable = false
-            onWordLost()
-        }
+        } else clickable = false
     }
 
-    WordBoxComponent(modifier, word, wordBoxAnimation, offsetAnimation) {
+    val backAnimation = animateColorAsState(
+        targetValue = wordBoxAnimation.backgroundColor,
+        animationSpec = tween(
+            durationMillis = if (word.position == Position.Start) 0 else 200,
+            delayMillis = wordBoxAnimation.delay
+        ), label = "wordBackgroundAnimation"
+    )
+
+    val offsAnimation = animateFloatAsState(
+        targetValue = wordBoxAnimation.targetOffset,
+        animationSpec = tween(
+            durationMillis = wordBoxAnimation.duration,
+            delayMillis = wordBoxAnimation.delay,
+            easing = LinearEasing,
+        ),
+        label = "wordOffsetAnimation",
+        finishedListener = {
+            onWordLost()
+        }
+    )
+
+    WordBoxComponent(modifier, word, backAnimation.value, offsAnimation.value) {
         if (clickable) onWordCaught()
     }
 }
@@ -240,20 +235,20 @@ private fun WordBox(
 private fun WordBoxComponent(
     modifier: Modifier,
     word: Word,
-    wordBoxAnimation: WordBoxAnimation,
-    offsetAnimation: Animatable<Float, AnimationVector1D>,
+    backgroundAnimation: Color,
+    offsetAnimation: Float,
     onWordCaught: () -> Unit
 ) {
     OutlinedButton(
         onClick = { onWordCaught() },
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = wordBoxAnimation.backgroundColor),
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundAnimation),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
         contentPadding = PaddingValues(horizontal = 6.dp),
         modifier = modifier
             .wrapContentSize()
             .offset(
-                x = with(LocalDensity.current) { offsetAnimation.value.toDp() },
+                x = with(LocalDensity.current) { offsetAnimation.toDp() },
                 y = 0.dp
             )
     ) {
