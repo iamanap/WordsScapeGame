@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.components
+package com.example.wordsscapegame.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +15,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable function that creates a box with a shadow effect.
+ *
+ * This function creates a box with a background color and a shadow. The shadow is created by
+ * drawing a slightly larger box behind the main box with a darker color. The shadow can be
+ * customized using the `shadowColor`, `borderWidth`, and `elevation` parameters.
+ *
+ * @param modifier Modifier to be applied to the box.
+ * @param backgroundColor The background color of the box.
+ * @param shadowColor The color of the shadow.
+ * @param borderWidth The width of the border around the box.
+ * @param elevation The elevation of the box, which affects the size and intensity of the shadow.
+ * @param roundedCornerShape The shape of the corners of the box.
+ * @param content The content to be displayed inside the box.
+ */
 @Composable
 fun ShadowedBox(
     modifier: Modifier = Modifier,

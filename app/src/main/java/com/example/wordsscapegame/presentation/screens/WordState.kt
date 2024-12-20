@@ -1,23 +1,24 @@
-package com.example.wordsscapegame.domain.data
+package com.example.wordsscapegame.presentation.screens
 
 import androidx.compose.ui.graphics.Color
+import com.example.wordsscapegame.domain.data.Word
 
 /**
  * Represents a word in the game.
  *
- * @property text The text of the word.
+ * @property word The word data.
  * @property position The initial position of the word.
  * @property color The color of the word.
  * @property caught Indicates if the word has been caught by the player.
- * @property animation The animation properties of the word.
+ * @property wordAnimationState The animation properties of the word.
  *
  */
 data class WordState(
-    val text: String,
+    val word: Word,
     val position: Position,
     val color: Color,
     val caught: Boolean,
-    val animation: Animation
+    val wordAnimationState: WordAnimationState
 )
 
 /**
@@ -26,7 +27,7 @@ data class WordState(
  * @property duration The duration of the word's animation.
  * @property delay The delay before the word starts animating.
  */
-data class Animation(
+data class WordAnimationState(
     val duration: Int,
     val delay: Int
 )

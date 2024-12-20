@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.components
+package com.example.wordsscapegame.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -21,6 +21,16 @@ import com.example.wordsscapegame.presentation.theme.LightGreen
 import com.example.wordsscapegame.presentation.theme.Red
 import com.example.wordsscapegame.presentation.theme.Typography
 
+/**
+ * A composable function that displays the score bar in the game.
+ *
+ * This function displays two score boxes: one for the caught score and one for the lost score.
+ * The score boxes are arranged horizontally and spaced evenly.
+ *
+ * @param modifier Modifier to be applied to the score bar layout.
+ * @param caughtScore The current score for caught words.
+ * @param lostScore The current score for lost words.
+ */
 @Composable
 fun GameScoreBar(
     modifier: Modifier = Modifier,
@@ -49,6 +59,17 @@ fun GameScoreBar(
     }
 }
 
+/**
+ * A composable function that displays a single score box.
+ *
+ * This function displays the score value along with an icon representing the score type
+ * (caught or lost). The score box has a background color, shadow, and rounded corners.
+ *
+ * @param boxModifier Modifier to be applied to the score box layout.
+ * @param caughtScore The current score for caught words.
+ * @param lostScore The current score for lost words.
+ * @param scoreType The type of score to display (caught or lost).
+ */
 @Composable
 private fun ScoreBox(
     boxModifier: Modifier,

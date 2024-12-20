@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.components
+package com.example.wordsscapegame.presentation.components
 
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
@@ -27,6 +27,25 @@ import androidx.compose.ui.window.Dialog
 import com.example.wordsscapegame.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 
+/**
+ * A dialog that displays information about a required permission and provides options
+ * for the user to grant the permission or navigate to app settings.
+ *
+ * This dialog is typically used when an app needs to request a permission that has been
+ * denied or permanently declined by the user. It explains why the permission is needed
+ * and provides clear actions for the user to take.
+ *
+ * @param modifier Modifier to be applied to the dialog.
+ * @param permissionProvider An instance of PermissionTextProvider that provides
+ * descriptive text about the required permission.
+ * @param isPermanentlyDeclined Indicates whether the permission has been permanently
+ * declined by the user.
+ * @param onDismiss The action to perform when the dialog is dismissed.
+ * @param onConfirmation The action to perform when the user confirms the permission
+ * request (e.g., by clicking "OK").
+ * @param onGoToAppSettings The action to perform when the user chooses to navigate
+ * to the app's settings to grant the permission manually.
+ */
 @Composable
 fun PermissionDialog(
     modifier: Modifier = Modifier,

@@ -1,10 +1,10 @@
-package com.example.wordsscapegame.di
+package com.example.wordsscapegame.core.di
 
 import android.content.Context
-import com.example.wordsscapegame.services.ReactionService
-import com.example.wordsscapegame.services.ReactionServiceImpl
-import com.example.wordsscapegame.services.SpeechRecognitionService
-import com.example.wordsscapegame.services.SpeechRecognitionServiceImpl
+import com.example.wordsscapegame.core.services.ReactionService
+import com.example.wordsscapegame.core.services.ReactionServiceImpl
+import com.example.wordsscapegame.core.services.SpeechRecognitionService
+import com.example.wordsscapegame.core.services.SpeechRecognitionServiceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

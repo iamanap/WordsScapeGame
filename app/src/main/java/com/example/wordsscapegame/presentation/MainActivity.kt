@@ -1,4 +1,4 @@
-package com.example.wordsscapegame
+package com.example.wordsscapegame.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -30,10 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.example.wordsscapegame.components.PermissionDialog
-import com.example.wordsscapegame.components.RecordAudioPermissionTextProvider
-import com.example.wordsscapegame.ui.screens.GameScreen
-import com.example.wordsscapegame.ui.screens.GameViewModel
+import com.example.wordsscapegame.presentation.components.PermissionDialog
+import com.example.wordsscapegame.presentation.components.RecordAudioPermissionTextProvider
+import com.example.wordsscapegame.presentation.screens.GameScreen
+import com.example.wordsscapegame.presentation.screens.GameViewModel
 import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
 import dagger.hilt.android.AndroidEntryPoint
 

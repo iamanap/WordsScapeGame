@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.components
+package com.example.wordsscapegame.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize
@@ -12,6 +12,20 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 
+/**
+ * A composable function that displays text with an outline and fill.
+ *
+ * This function creates a text element with a specified outline color and fill color.
+ * It achieves this by drawing the text twice: once with the outline color and a stroke,
+ * and then again with the fill color. This creates the effect of outlined and filled text.
+ *
+ * @param modifier Modifier to be applied to the text layout.
+ * @param text The text to be displayed.
+ * @param color The fill color of the text.
+ * @param outlineColor The color of the text outline.
+ * @param strokeWidth The width of the outline stroke.
+ * @param style The text style to be applied.
+ */
 @Composable
 fun TextOutlinedAndFilled(
     modifier: Modifier = Modifier,

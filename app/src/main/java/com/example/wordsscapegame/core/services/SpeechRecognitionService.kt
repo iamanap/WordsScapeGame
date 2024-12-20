@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.services
+package com.example.wordsscapegame.core.services
 
 import android.content.Context
 import android.content.Intent
@@ -11,47 +11,55 @@ import com.example.wordsscapegame.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
+/**
+ * An interface for providing speech recognition functionality.
+ *
+ * Implementations of this interface are responsible for managing and triggering
+ * speech recognition events, handling results, and providing state updates.
+ */
 interface SpeechRecognitionService {
-    fun startListening(options: SpeechRecognitionOptions)
+    fun startListening()
     fun stopListening()
+    /**
+     * Provides a flow of the current speech recognition state.
+     */
     val speechState: StateFlow<SpeechState>
 }
-
-data class SpeechRecognitionOptions(
-    val expectedWords: List<String> = emptyList(),
-    val maxAlternatives: Int = 2
-)
-
+/**
+ * An implementation of the `SpeechRecognitionService` interface that uses the
+ * Android SpeechRecognizer API.
+ *
+ * This class handles speech recognition events, processes results, and updates
+ * the speech state flow.
+ *
+ * @param context The application context.
+ */
 class SpeechRecognitionServiceImpl @Inject constructor(
     private val context: Context
 ) :
     SpeechRecognitionService, RecognitionListener {
     private val _speechState = MutableStateFlow(SpeechState())
     override val speechState = _speechState.asStateFlow()
-    private var currentOptions: SpeechRecognitionOptions? = null
     private var isListening = false
-    private val recognizer = SpeechRecognizer.createSpeechRecognizer(context)
-    private val mutex = Mutex()
+    private var recognizer = SpeechRecognizer.createSpeechRecognizer(context)
 
     private val workerScope = CoroutineScope(Dispatchers.Default + Job())
 
-    init {
-        recognizer.setRecognitionListener(this)
-    }
 
-    override fun startListening(options: SpeechRecognitionOptions) {
+    override fun startListening() {
         if (isListening) return // Avoid multiple listeners
 
-        currentOptions = options
-        _speechState.update { SpeechState() }
+        recognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        recognizer.setRecognitionListener(this)
 
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             _speechState.update {
@@ -59,52 +67,31 @@ class SpeechRecognitionServiceImpl @Inject constructor(
                     error = context.getString(R.string.speech_service_error)
                 )
             }
+            return
         }
 
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
+        createSpeechRecognitionIntent().run {
+            recognizer.startListening(this)
+        }
+    }
+
+    private fun createSpeechRecognitionIntent(): Intent {
+        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-        }
-
-        recognizer.startListening(intent)
-        isListening = true
-
-        _speechState.update {
-            it.copy(
-                isSpeaking = true
-            )
         }
     }
 
     override fun stopListening() {
-        _speechState.update {
-            it.copy(
-                spokenWords = emptyList(),
-                isSpeaking = false
-            )
-        }
         recognizer.stopListening()
+        recognizer.destroy()
         isListening = false
     }
 
     override fun onReadyForSpeech(params: Bundle?) {
-        _speechState.update {
-            it.copy(
-                error = null
-            )
-        }
-    }
-
-    override fun onEndOfSpeech() {
-        _speechState.update {
-            it.copy(
-                isSpeaking = false
-            )
-        }
+        isListening = true
+        _speechState.update { SpeechState() }
     }
 
     override fun onError(error: Int) {
@@ -123,6 +110,10 @@ class SpeechRecognitionServiceImpl @Inject constructor(
         updateResultState(results)
     }
 
+    override fun onPartialResults(partialResults: Bundle?) {
+        updateResultState(partialResults)
+    }
+
     private fun updateResultState(results: Bundle?) {
         results
             ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -138,23 +129,14 @@ class SpeechRecognitionServiceImpl @Inject constructor(
             }
     }
 
-    override fun onPartialResults(partialResults: Bundle?) {
-        updateResultState(partialResults)
-    }
-
+    override fun onEndOfSpeech() = Unit
     override fun onEvent(eventType: Int, params: Bundle?) = Unit
     override fun onBeginningOfSpeech() = Unit
     override fun onRmsChanged(rmsdB: Float) = Unit
     override fun onBufferReceived(buffer: ByteArray?) = Unit
-
-    private data class ProcessedResult(
-        val bestMatch: String,
-        val alternatives: List<String>
-    )
 }
 
 data class SpeechState(
     val spokenWords: List<String> = emptyList(),
-    val isSpeaking: Boolean = false,
     val error: String? = null
 )

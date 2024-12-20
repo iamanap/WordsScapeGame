@@ -1,4 +1,5 @@
 package com.example.wordsscapegame.domain.data
 
-class Word {
-}
+data class Word(
+    val text: String
+)

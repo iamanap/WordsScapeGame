@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.components
+package com.example.wordsscapegame.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -20,9 +20,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.wordsscapegame.ui.screens.GameStatus
+import com.example.wordsscapegame.presentation.screens.GameStatus
 import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
 
+/**
+ * A reusable action button component.
+ *
+ * This button can be used to trigger actions within the app.
+ *
+ * @param text The text displayed on the button.
+ * @param onClick The action to perform when the button is clicked.
+ */
 @Composable
 fun ActionButton(
     modifier: Modifier = Modifier,

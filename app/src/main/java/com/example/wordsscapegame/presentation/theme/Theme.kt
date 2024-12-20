@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.ui.theme
+package com.example.wordsscapegame.presentation.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme

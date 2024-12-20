@@ -1,4 +1,4 @@
-package com.example.wordsscapegame.ui.screens
+package com.example.wordsscapegame.presentation.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -48,14 +48,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.wordsscapegame.components.ActionButton
-import com.example.wordsscapegame.components.GameScoreBar
-import com.example.wordsscapegame.components.TextOutlinedAndFilled
-import com.example.wordsscapegame.domain.data.Position
-import com.example.wordsscapegame.domain.data.Word
+import com.example.wordsscapegame.presentation.components.ActionButton
+import com.example.wordsscapegame.presentation.components.GameScoreBar
+import com.example.wordsscapegame.presentation.components.TextOutlinedAndFilled
 import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
 import kotlinx.coroutines.delay
 
+/**
+ * Represents the game screen where the word-catching game is played.
+ *
+ * This composable displays the game elements, including the score bar,
+ * word trails, caught words box, and action button. It handles
+ * game logic and user interactions.
+ *
+ * @param modifier The modifier to be applied to the layout.
+ * @param viewModel The GameViewModel instance used to manage game state.
+ */
 @Composable
 fun GameScreen(
     modifier: Modifier = Modifier,
@@ -80,12 +88,12 @@ fun GameScreen(
                 lostScore = gameUiState.lostScore
             )
             WordTrails(
-                movingWords = wordsUiState.movingWords,
+                movingWordStates = wordsUiState.movingWords,
                 onWordLost = { index, word -> viewModel.onWordLost(index, word) },
                 onWordCaught = { index -> viewModel.onWordCaught(index) }
             )
             CaughtWordsBox(
-                caughtWords = wordsUiState.caughtWords,
+                caughtWordStates = wordsUiState.caughtWords,
                 modifier = Modifier
                     .weight(1f)
             )
@@ -116,11 +124,22 @@ fun GameScreen(
     }
 }
 
+/**
+ * Displays the trails for the moving words in the game.
+ *
+ * This composable iterates through the list of moving words and
+ * renders a WordTrail for each word. It handles word catching
+ * and word loss events.
+ *
+ * @param movingWordStates The list of words currently moving in the game.
+ * @param onWordCaught Callback function triggered when a word is caught.
+ * @param onWordLost Callback function triggered when a word is lost.
+ */
 @Composable
 private fun WordTrails(
-    movingWords: List<Word>,
+    movingWordStates: List<WordState>,
     onWordCaught: (Int) -> Unit,
-    onWordLost: (Int, Word) -> Unit
+    onWordLost: (Int, WordState) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -128,9 +147,9 @@ private fun WordTrails(
             .padding(top = 13.dp, start = 20.dp, end = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        movingWords.forEachIndexed { i, word ->
+        movingWordStates.forEachIndexed { i, word ->
             WordTrail(
-                word = word,
+                wordState = word,
                 onWordCaught = { onWordCaught(i) },
                 onWordLost = { onWordLost(i, word) }
             )
@@ -138,9 +157,19 @@ private fun WordTrails(
     }
 }
 
+/**
+ * Displays the trail for a single moving word.
+ *
+ * This composable renders the visual representation of a word's
+ * trail and handles its movement and interactions.
+ *
+ * @param wordState The word object to be displayed.
+ * @param onWordCaught Callback function triggered when the word is caught.
+ * @param onWordLost Callback function triggered when the word is lost.
+ */
 @Composable
 private fun WordTrail(
-    word: Word,
+    wordState: WordState,
     onWordCaught: () -> Unit,
     onWordLost: () -> Unit
 ) {
@@ -165,7 +194,7 @@ private fun WordTrail(
                 .background(WordsScapeGameTheme.extraColors.trailBackground)
         )
         AnimatedVisibility(
-            visible = !word.caught,
+            visible = !wordState.caught,
             enter = fadeIn(
                 animationSpec = tween(durationMillis = 50)
             ),
@@ -179,7 +208,7 @@ private fun WordTrail(
                         wordBoxWidth = layoutCoordinates.size.width.toFloat()
                     },
                 targetOffset = (parentWidth - wordBoxWidth),
-                word = word,
+                wordState = wordState,
                 onWordCaught = onWordCaught,
                 onWordLost = onWordLost
             )
@@ -187,19 +216,31 @@ private fun WordTrail(
     }
 }
 
+/**
+ * Displays the visual representation of a word box.
+ *
+ * This composable renders the word box with its text and handles
+ * its animation and interactions.
+ *
+ * @param wordState The word object to be displayed in the box.
+ * @param modifier The modifier to be applied to the layout.
+ * @param targetOffset The target offset for the word box animation.
+ * @param onWordCaught Callback function triggered when the word is caught.
+ * @param onWordLost Callback function triggered when the word is lost.
+ */
 @Composable
 private fun WordBox(
-    word: Word,
+    wordState: WordState,
     modifier: Modifier,
     targetOffset: Float = 0f,
     onWordCaught: () -> Unit,
     onWordLost: () -> Unit
 ) {
     var clickable by rememberSaveable { mutableStateOf(false) }
-    val wordBoxAnimation = onPosition(word = word, targetOffset = targetOffset)
+    val wordBoxAnimation = onPosition(wordState = wordState, targetOffset = targetOffset)
 
-    LaunchedEffect(word.position) {
-        if (word.position == Position.Moving) {
+    LaunchedEffect(wordState.position) {
+        if (wordState.position == Position.Moving) {
             delay(wordBoxAnimation.delay.toLong())
             clickable = true
         } else clickable = false
@@ -208,7 +249,7 @@ private fun WordBox(
     val backAnimation = animateColorAsState(
         targetValue = wordBoxAnimation.backgroundColor,
         animationSpec = tween(
-            durationMillis = if (word.position == Position.Start) 0 else 200,
+            durationMillis = if (wordState.position == Position.Start) 0 else 200,
             delayMillis = wordBoxAnimation.delay
         ), label = "wordBackgroundAnimation"
     )
@@ -226,15 +267,27 @@ private fun WordBox(
         }
     )
 
-    WordBoxComponent(modifier, word, backAnimation.value, offsAnimation.value) {
+    WordBoxComponent(modifier, wordState.word.text, backAnimation.value, offsAnimation.value) {
         if (clickable) onWordCaught()
     }
 }
 
+/**
+ * Renders the visual component of a word box.
+ *
+ * This composable displays the word box with its text, background,
+ * and border. It handles the click event for catching the word.
+ *
+ * @param modifier The modifier to be applied to the layout.
+ * @param wordState The word object to be displayed in the box.
+ * @param backgroundAnimation The background color of the word box.
+ * @param offsetAnimation The offset of the word box animation.
+ * @param onWordCaught Callback function triggered when the word is caught.
+ */
 @Composable
 private fun WordBoxComponent(
     modifier: Modifier,
-    word: Word,
+    text: String,
     backgroundAnimation: Color,
     offsetAnimation: Float,
     onWordCaught: () -> Unit
@@ -253,7 +306,7 @@ private fun WordBoxComponent(
             )
     ) {
         TextOutlinedAndFilled(
-            text = word.text,
+            text = text,
             style = MaterialTheme.typography.labelMedium,
             strokeWidth = 4f,
             modifier = Modifier
@@ -262,9 +315,20 @@ private fun WordBoxComponent(
     }
 }
 
+/**
+ * Determines the animation parameters for a word box based on its position.
+ *
+ * This function returns a WordBoxAnimation object containing the
+ * background color, target offset, duration, and delay for the
+ * word box animation.
+ *
+ * @param wordState The word object for which to determine animation parameters.
+ * @param targetOffset The target offset for the word box animation.
+ * @return A WordBoxAnimation object containing the animation parameters.
+ */
 @Composable
-fun onPosition(word: Word, targetOffset: Float): WordBoxAnimation {
-    return when (word.position) {
+fun onPosition(wordState: WordState, targetOffset: Float): WordBoxAnimation {
+    return when (wordState.position) {
         Position.Start -> {
             WordBoxAnimation(
                 backgroundColor = WordsScapeGameTheme.extraColors.resetButtonBackground,
@@ -276,17 +340,17 @@ fun onPosition(word: Word, targetOffset: Float): WordBoxAnimation {
 
         Position.Moving -> {
             WordBoxAnimation(
-                backgroundColor = word.color,
+                backgroundColor = wordState.color,
                 targetOffset = targetOffset,
-                duration = word.animation.duration,
-                delay = word.animation.delay
+                duration = wordState.wordAnimationState.duration,
+                delay = wordState.wordAnimationState.delay
             )
         }
 
         else ->
             WordBoxAnimation(
-                backgroundColor = if (!word.caught) WordsScapeGameTheme.extraColors.wordLost
-                    else word.color
+                backgroundColor = if (!wordState.caught) WordsScapeGameTheme.extraColors.wordLost
+                    else wordState.color
                 ,
                 targetOffset = targetOffset,
                 duration = 0,
@@ -295,11 +359,20 @@ fun onPosition(word: Word, targetOffset: Float): WordBoxAnimation {
     }
 }
 
+/**
+ * Displays the box containing the caught words.
+ *
+ * This composable renders a box that displays the words that have
+ * been caught during the game.
+ *
+ * @param modifier The modifier to be applied to the layout.
+ * @param caughtWordStates The set of words that have been caught.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CaughtWordsBox(
     modifier: Modifier = Modifier,
-    caughtWords: Set<Word>
+    caughtWordStates: Set<WordState>
 ) {
     val cornerShape = RoundedCornerShape(8.dp)
 
@@ -319,10 +392,10 @@ private fun CaughtWordsBox(
                 .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            caughtWords.forEach { word ->
+            caughtWordStates.forEach { word ->
                 WordBox(
                     modifier = Modifier,
-                    word = word,
+                    wordState = word,
                     onWordCaught = {},
                     onWordLost = {}
                 )
@@ -337,6 +410,17 @@ private fun GameScreenPreview() {
     GameScreen()
 }
 
+/**
+ * Data class representing the animation parameters for a word box.
+ *
+ * This class holds the background color, target offset, duration,
+ * and delay for the animation of a word box.
+ *
+ * @property backgroundColor The background color of the word box.
+ * @property targetOffset The target offset for the word box animation.
+ * @property duration The duration of the animation in milliseconds.
+ * @property delay The delay before the animation starts in milliseconds.
+ */
 data class WordBoxAnimation(
     val backgroundColor: Color,
     val targetOffset: Float,
