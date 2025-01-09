@@ -16,20 +16,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import com.example.wordsscapegame.presentation.components.PermissionDialog
 import com.example.wordsscapegame.presentation.components.RecordAudioPermissionTextProvider
 import com.example.wordsscapegame.presentation.screens.GameScreen
@@ -49,52 +45,53 @@ class MainActivity : ComponentActivity() {
                 val viewModel by viewModels<GameViewModel>()
                 val permissionIsGranted by viewModel.isVoicePermissionGranted.collectAsState()
 
-                Scaffold(
+                Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                ) { padding ->
-                    GameScreen(
-                        modifier = Modifier
-                            .padding(
-                                start = padding.calculateStartPadding(LayoutDirection.Ltr),
-                                end = padding.calculateEndPadding(LayoutDirection.Rtl),
-                                bottom = padding.calculateBottomPadding() - 18.dp,
-                                top = padding.calculateTopPadding() - 4.dp
-                            )
-                    )
-                }
-
-                val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission(),
-                    onResult = { isGranted ->
-                        viewModel.onPermissionGranted(isGranted)
-                    }
-                )
-                LaunchedEffect(permissionIsGranted) {
-                    requestPermission(recordAudioPermissionLauncher)
-                }
-
-                AnimatedVisibility(
-                    !permissionIsGranted &&
-                            !shouldShowRequestPermissionRationale(
-                                Manifest.permission.RECORD_AUDIO
-                            )
+                        .background(MaterialTheme.colorScheme.background)
                 ) {
-                    PermissionDialog(
-                        permissionProvider = RecordAudioPermissionTextProvider(context = LocalContext.current),
-                        isPermanentlyDeclined = !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO),
-                        onDismiss = ::openAppSettings,
-                        onConfirmation = {
-                            viewModel.dismissDialog()
-                            requestPermission(recordAudioPermissionLauncher)
-                        },
-                        onGoToAppSettings = {
-                            openAppSettings()
-                            viewModel.dismissDialog()
-                        }
-                    )
+                    GameScreen()
                 }
+
+                PermissionRequest(viewModel, permissionIsGranted)
             }
+        }
+    }
+
+    @Composable
+    private fun PermissionRequest(
+        viewModel: GameViewModel,
+        permissionIsGranted: Boolean
+    ) {
+        val recordAudioPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                viewModel.onPermissionGranted(isGranted)
+            }
+        )
+        LaunchedEffect(permissionIsGranted) {
+            requestPermission(recordAudioPermissionLauncher)
+        }
+
+        AnimatedVisibility(
+            !permissionIsGranted &&
+                    !shouldShowRequestPermissionRationale(
+                        Manifest.permission.RECORD_AUDIO
+                    )
+        ) {
+            PermissionDialog(
+                permissionProvider = RecordAudioPermissionTextProvider(context = LocalContext.current),
+                isPermanentlyDeclined = !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO),
+                onDismiss = ::openAppSettings,
+                onConfirmation = {
+                    viewModel.dismissDialog()
+                    requestPermission(recordAudioPermissionLauncher)
+                },
+                onGoToAppSettings = {
+                    openAppSettings()
+                    viewModel.dismissDialog()
+                }
+            )
         }
     }
 
@@ -102,14 +99,6 @@ class MainActivity : ComponentActivity() {
         run {
             recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WordsScapeGameTheme {
-        GameScreen()
-    }
 }
 
 fun Activity.openAppSettings() {

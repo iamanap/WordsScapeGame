@@ -29,7 +29,7 @@ import com.example.wordsscapegame.presentation.theme.WordsScapeGameTheme
  * This button can be used to trigger actions within the app.
  *
  * @param text The text displayed on the button.
- * @param onClick The action to perform when the button is clicked.
+ * @param onClicked The action to perform when the button is clicked.
  */
 @Composable
 fun ActionButton(

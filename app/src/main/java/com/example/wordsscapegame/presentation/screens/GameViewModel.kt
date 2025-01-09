@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wordsscapegame.R
 import com.example.wordsscapegame.domain.data.GameData
-import com.example.wordsscapegame.core.services.ReactionService
+import com.example.wordsscapegame.core.services.SoundEffectService
 import com.example.wordsscapegame.core.services.SpeechRecognitionService
+import com.example.wordsscapegame.core.services.TextToSpeechService
+import com.example.wordsscapegame.core.services.VibrationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,12 +33,14 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameData: GameData,
-    private val reactionService: ReactionService,
+    private val vibrationService: VibrationService,
+    private val soundEffectService: SoundEffectService,
+    private val textToSpeechService: TextToSpeechService,
     private val speechRecognitionService: SpeechRecognitionService
 ) : ViewModel() {
 
     private val _isVoidPermissionIsGranted = MutableStateFlow(true)
-    val isVoicePermissionGranted: StateFlow<Boolean> = _isVoidPermissionIsGranted
+    val isVoicePermissionGranted: StateFlow<Boolean> = _isVoidPermissionIsGranted.asStateFlow()
 
     private val _wordsViewState =
         MutableStateFlow(WordsViewState(movingWords = gameData.getMovingWords()))
@@ -52,7 +56,7 @@ class GameViewModel @Inject constructor(
     val gameUiState = _gameViewState.asStateFlow()
 
     init {
-        reactionService.loadSound(R.raw.catch_sound)
+        soundEffectService.preloadSound(R.raw.catch_sound)
         viewModelScope.launch {
             speechRecognitionService.speechState.collect {
                 if (it.spokenWords.isNotEmpty())
@@ -74,7 +78,8 @@ class GameViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        reactionService.release()
+        soundEffectService.release()
+        textToSpeechService.release()
         stopSpeechRecognition()
     }
 
@@ -109,7 +114,7 @@ class GameViewModel @Inject constructor(
      */
     fun onWordLost(index: Int, wordState: WordState) {
         if (wordState.position == Position.Moving && !wordState.caught) {
-            reactionService.playText(wordState.word.text)
+            textToSpeechService.playText(wordState.word.text)
             _wordsViewState.update {
                 _wordsViewState.value.updateWordPosition(
                     index,
@@ -117,7 +122,7 @@ class GameViewModel @Inject constructor(
                 )
             }
             _gameViewState.update { _gameViewState.value.incrementLostScore() }
-            reactionService.vibrate(100L)
+            vibrationService.vibrate(100L)
         }
     }
 
@@ -136,7 +141,7 @@ class GameViewModel @Inject constructor(
             _wordsViewState.update { _wordsViewState.value.addCaughtWord(index) }
             _gameViewState.update { _gameViewState.value.incrementCaughtScore() }
             viewModelScope.launch {
-                reactionService.playEffect(R.raw.catch_sound)
+                soundEffectService.playEffect(R.raw.catch_sound)
             }
         }
     }
@@ -164,7 +169,7 @@ class GameViewModel @Inject constructor(
      * Checks if the recognized word matches any of the moving words and handles
      * the word catching event.
      */
-    fun processRecognizedWord() {
+    private fun processRecognizedWord() {
         val recognizedText = speechRecognitionService.speechState.value.spokenWords
         Log.i(GameViewModel::class.simpleName, "Recognized text: $recognizedText")
         recognizedText.forEach { recognizedWord ->

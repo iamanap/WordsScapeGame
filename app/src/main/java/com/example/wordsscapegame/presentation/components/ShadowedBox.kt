@@ -12,8 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.wordsscapegame.presentation.theme.DarkRed
+import com.example.wordsscapegame.presentation.theme.Red
 
 /**
  * A composable function that creates a box with a shadow effect.
@@ -33,11 +36,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ShadowedBox(
     modifier: Modifier = Modifier,
-    backgroundColor: Color,
-    shadowColor: Color,
+    backgroundColor: Color = Red,
+    shadowColor: Color = DarkRed,
     borderWidth: Dp = 1.dp,
     elevation: Dp = 4.dp,
-    roundedCornerShape: RoundedCornerShape,
+    roundedCornerShape: RoundedCornerShape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
     content: @Composable () -> Unit
 ) {
     Box(modifier = modifier) {
@@ -60,4 +63,10 @@ fun ShadowedBox(
             content()
         }
     }
+}
+
+@Preview(widthDp = 200, heightDp = 40)
+@Composable
+fun ShadowBoxPreview() {
+    ShadowedBox {}
 }
