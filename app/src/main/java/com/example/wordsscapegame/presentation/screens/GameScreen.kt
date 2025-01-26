@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,6 +49,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.wordsscapegame.presentation.components.ActionButton
@@ -61,65 +65,72 @@ import kotlinx.coroutines.delay
  * word trails, caught words box, and action button. It handles
  * game logic and user interactions.
  *
- * @param modifier The modifier to be applied to the layout.
  * @param viewModel The GameViewModel instance used to manage game state.
  */
 @Composable
 fun GameScreen(
-    modifier: Modifier = Modifier,
     viewModel: GameViewModel = hiltViewModel()
 ) {
     val wordsUiState by viewModel.wordsUiState.collectAsState()
     val gameUiState by viewModel.gameUiState.collectAsState()
 
-    Box(
-        modifier = modifier
+    Scaffold(
+        modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 20.dp)
-    ) {
-        Column(
+    ) { padding ->
+        Box(
             modifier = Modifier
-                .offset(y = (-10).dp)
-                .align(Alignment.TopCenter),
+                .fillMaxSize()
+                .padding(
+                    start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = padding.calculateEndPadding(LayoutDirection.Rtl),
+                    bottom = padding.calculateBottomPadding() - 18.dp,
+                    top = padding.calculateTopPadding() - 4.dp
+                )
         ) {
-            GameScoreBar(
-                caughtScore = gameUiState.caughtScore,
-                lostScore = gameUiState.lostScore
-            )
-            WordTrails(
-                movingWordStates = wordsUiState.movingWords,
-                onWordLost = { index, word -> viewModel.onWordLost(index, word) },
-                onWordCaught = { index -> viewModel.onWordCaught(index) }
-            )
-            CaughtWordsBox(
-                caughtWordStates = wordsUiState.caughtWords,
+            Column(
                 modifier = Modifier
-                    .weight(1f)
-            )
-            val (backgroundColor, shadowColor) = when (gameUiState.status) {
-                GameStatus.ReadyToPlay -> {
-                    Pair(
-                        MaterialTheme.colorScheme.primary,
-                        WordsScapeGameTheme.extraColors.greenContainerShadowBackground
-                    )
-                }
+                    .offset(y = (-10).dp)
+                    .align(Alignment.TopCenter),
+            ) {
+                GameScoreBar(
+                    caughtScore = gameUiState.caughtScore,
+                    lostScore = gameUiState.lostScore
+                )
+                WordTrails(
+                    movingWordStates = wordsUiState.movingWords,
+                    onWordLost = { index, word -> viewModel.onWordLost(index, word) },
+                    onWordCaught = { index -> viewModel.onWordCaught(index) }
+                )
+                CaughtWordsBox(
+                    caughtWordStates = wordsUiState.caughtWords,
+                    modifier = Modifier
+                        .weight(1f)
+                )
+                val (backgroundColor, shadowColor) = when (gameUiState.status) {
+                    GameStatus.ReadyToPlay -> {
+                        Pair(
+                            MaterialTheme.colorScheme.primary,
+                            WordsScapeGameTheme.extraColors.greenContainerShadowBackground
+                        )
+                    }
 
-                else -> {
-                    Pair(
-                        WordsScapeGameTheme.extraColors.resetButtonBackground,
-                        WordsScapeGameTheme.extraColors.resetButtonBackgroundShadow
-                    )
+                    else -> {
+                        Pair(
+                            WordsScapeGameTheme.extraColors.resetButtonBackground,
+                            WordsScapeGameTheme.extraColors.resetButtonBackgroundShadow
+                        )
+                    }
                 }
+                ActionButton(
+                    onClicked = { viewModel.changeGameStatus() },
+                    backgroundColor = backgroundColor,
+                    shadowColor = shadowColor,
+                    text = stringResource(gameUiState.status.text),
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterHorizontally)
+                )
             }
-            ActionButton(
-                onClicked = { viewModel.changeGameStatus() },
-                backgroundColor = backgroundColor,
-                shadowColor = shadowColor,
-                text = stringResource(gameUiState.status.text),
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterHorizontally)
-            )
         }
     }
 }
@@ -279,7 +290,7 @@ private fun WordBox(
  * and border. It handles the click event for catching the word.
  *
  * @param modifier The modifier to be applied to the layout.
- * @param wordState The word object to be displayed in the box.
+ * @param text The text to be displayed in the box.
  * @param backgroundAnimation The background color of the word box.
  * @param offsetAnimation The offset of the word box animation.
  * @param onWordCaught Callback function triggered when the word is caught.
@@ -350,8 +361,7 @@ fun onPosition(wordState: WordState, targetOffset: Float): WordBoxAnimation {
         else ->
             WordBoxAnimation(
                 backgroundColor = if (!wordState.caught) WordsScapeGameTheme.extraColors.wordLost
-                    else wordState.color
-                ,
+                else wordState.color,
                 targetOffset = targetOffset,
                 duration = 0,
                 delay = 0
@@ -368,6 +378,7 @@ fun onPosition(wordState: WordState, targetOffset: Float): WordBoxAnimation {
  * @param modifier The modifier to be applied to the layout.
  * @param caughtWordStates The set of words that have been caught.
  */
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CaughtWordsBox(
@@ -404,7 +415,7 @@ private fun CaughtWordsBox(
     }
 }
 
-@Preview
+@Preview(showBackground = true, widthDp = 320, heightDp = 640)
 @Composable
 private fun GameScreenPreview() {
     GameScreen()

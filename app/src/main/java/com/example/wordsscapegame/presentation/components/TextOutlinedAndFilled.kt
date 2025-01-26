@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 
 /**
  * A composable function that displays text with an outline and fill.
@@ -29,11 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 @Composable
 fun TextOutlinedAndFilled(
     modifier: Modifier = Modifier,
-    text: String,
+    text: String = "",
     color: Color = Color.White,
     outlineColor: Color = MaterialTheme.colorScheme.outline,
     strokeWidth: Float = 4f,
-    style: TextStyle
+    style: TextStyle =MaterialTheme.typography.labelMedium
 ) {
     Box(
         modifier = modifier
@@ -74,4 +75,11 @@ fun CustomText(
         textAlign = TextAlign.Center,
         maxLines = 1
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TextOutlinedAndFilledPreview() {
+    TextOutlinedAndFilled()
+
 }

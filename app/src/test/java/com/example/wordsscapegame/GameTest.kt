@@ -1,9 +1,11 @@
 package com.example.wordsscapegame
 
 import androidx.compose.ui.graphics.Color
-import com.example.wordsscapegame.core.services.ReactionService
+import com.example.wordsscapegame.core.services.SoundEffectService
 import com.example.wordsscapegame.core.services.SpeechRecognitionService
 import com.example.wordsscapegame.core.services.SpeechState
+import com.example.wordsscapegame.core.services.TextToSpeechService
+import com.example.wordsscapegame.core.services.VibrationService
 import com.example.wordsscapegame.domain.data.GameData
 import com.example.wordsscapegame.domain.data.Word
 import com.example.wordsscapegame.presentation.screens.GameStatus
@@ -27,7 +29,9 @@ import org.mockito.kotlin.whenever
 class GameTest {
     private lateinit var viewModel: GameViewModel
     private val gameData: GameData = mock()
-    private val reactionService: ReactionService = mock()
+    private val vibrationService: VibrationService = mock()
+    private val soundEffectService: SoundEffectService = mock()
+    private val textToSpeechService: TextToSpeechService = mock()
     private val speechRecognitionService: SpeechRecognitionService = mock()
 
     @Before
@@ -54,7 +58,13 @@ class GameTest {
                 )
             )
         )
-        viewModel = GameViewModel(gameData, reactionService, speechRecognitionService)
+        viewModel = GameViewModel(
+            gameData,
+            vibrationService,
+            soundEffectService,
+            textToSpeechService,
+            speechRecognitionService
+        )
     }
 
     @Test
@@ -122,8 +132,8 @@ class GameTest {
         assertEquals(Position.End, viewModel.wordsUiState.value.movingWords[0].position)
         assertEquals(1, viewModel.gameUiState.value.lostScore)
 
-        verify(reactionService).playText("test1")
-        verify(reactionService).vibrate()
+        verify(textToSpeechService).playText("test1")
+        verify(vibrationService).vibrate()
     }
 
     @Test
@@ -133,7 +143,7 @@ class GameTest {
 
         assertEquals(true, viewModel.wordsUiState.value.movingWords[0].caught)
         assertEquals(1, viewModel.gameUiState.value.caughtScore)
-        verify(reactionService).playEffect(R.raw.catch_sound)
+        verify(soundEffectService).playEffect(R.raw.catch_sound)
     }
 
 
