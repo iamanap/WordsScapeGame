@@ -1,6 +1,6 @@
 # Words Scape Game - Documentation
 
-This is the repository for the coding test “Words Scape Game”, a project to study the JetpackCompose.
+This is the repository for “Words Scape Game”, a project to study the JetpackCompose.
 
 - The game challenges players to capture words moving horizontally across multiple lanes at varying speeds, either by tapping them or speaking them aloud using ASR. 
 - Words that escape are vocalized by the system's TTS engine. 
